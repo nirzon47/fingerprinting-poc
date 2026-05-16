@@ -24,5 +24,10 @@ export const upsertFingerprint = createServerFn({ method: "POST" })
 			})
 			.returning();
 
-		return record;
+		return {
+			is_new: record.accessCount === 1,
+			visitorId: record.fingerprint,
+			lastAccessed: record.lastAccessedAt,
+			numberOfTimesAccessed: record.accessCount,
+		};
 	});
