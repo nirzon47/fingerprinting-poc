@@ -6,6 +6,7 @@
       "name": "fingerprinting-poc",
       "dependencies": {
         "@fingerprint/react": "^3.0.0",
+        "@fingerprintjs/fingerprintjs": "^5.2.0",
         "@neondatabase/serverless": "^1.0.2",
         "@tailwindcss/vite": "^4.3.0",
         "@tanstack/react-devtools": "latest",
@@ -18,7 +19,6 @@
         "drizzle-orm": "^0.45.1",
         "lucide-react": "^0.545.0",
         "nitro": "npm:nitro-nightly@latest",
-        "pg": "^8.16.3",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
         "tailwindcss": "^4.3.0",
@@ -31,7 +31,6 @@
         "@testing-library/dom": "^10.4.1",
         "@testing-library/react": "^16.3.0",
         "@types/node": "^22.10.2",
-        "@types/pg": "^8.15.6",
         "@types/react": "^19.2.0",
         "@types/react-dom": "^19.2.0",
         "@vitejs/plugin-react": "^6.0.1",
@@ -200,6 +199,8 @@
     "@fingerprint/agent": ["@fingerprint/agent@4.0.3", "", {}, "sha512-hYAk8gPKgW3i1zkZm62wPp31ibGwHao0QXU5F7ydiQwxhxPhfd4IjPIPxDkuQJgH3GaBkYn7Hgkgrq38K9aJzw=="],
 
     "@fingerprint/react": ["@fingerprint/react@3.0.0", "", { "dependencies": { "@fingerprint/agent": "^4.0.0", "fast-deep-equal": "3.1.3" } }, "sha512-pnf31eSxKcRBDWLVi8Z3SkHJDO3nzk4yLkprQ1BqLQ6PPBkabAtY/v1JrhCz8pyuL3KxgnZGJGv5Z8htMNZy7g=="],
+
+    "@fingerprintjs/fingerprintjs": ["@fingerprintjs/fingerprintjs@5.2.0", "", {}, "sha512-j+2nInkwCQNTJcNhOjvkGM/nLRTuGJTC6xai4quqvUpjob2ssrGwBZjS7k55nOmKvge7qvJT2nS3i/IRvQSTQA=="],
 
     "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.13", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.0", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA=="],
 
