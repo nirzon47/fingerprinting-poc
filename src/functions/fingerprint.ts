@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
-import { and, eq, isNotNull, sql } from "drizzle-orm";
+import { eq, or, sql } from "drizzle-orm";
 
 import { db } from "#/db/index";
 import { fingerprints } from "#/db/schema";
@@ -13,6 +13,24 @@ type Signals = {
 	screenHash: string;
 	hardwareHash: string;
 };
+
+type StoredFingerprint = typeof fingerprints.$inferSelect;
+
+const SCORE_THRESHOLD = 60;
+
+function scoreCandidate(
+	candidate: StoredFingerprint,
+	data: Signals,
+	ip: string | null,
+): number {
+	let score = 0;
+	if (data.canvasHash !== "no-canvas" && candidate.canvasHash === data.canvasHash) score += 40;
+	if (data.webglHash !== "no-webgl" && candidate.webglHash === data.webglHash) score += 30;
+	if (candidate.hardwareHash && candidate.hardwareHash === data.hardwareHash) score += 20;
+	if (candidate.screenHash && candidate.screenHash === data.screenHash) score += 10;
+	if (ip && candidate.ipAddress === ip) score += 5;
+	return score;
+}
 
 export const upsertFingerprint = createServerFn({ method: "POST" })
 	.inputValidator((data: Signals) => {
@@ -57,27 +75,33 @@ export const upsertFingerprint = createServerFn({ method: "POST" })
 			};
 		}
 
-		const canFuzzyMatch =
-			data.canvasHash &&
-			data.webglHash &&
-			data.canvasHash !== "no-canvas" &&
-			data.webglHash !== "no-webgl";
+		const orConditions = [
+			...(data.canvasHash && data.canvasHash !== "no-canvas"
+				? [eq(fingerprints.canvasHash, data.canvasHash)]
+				: []),
+			...(data.webglHash && data.webglHash !== "no-webgl"
+				? [eq(fingerprints.webglHash, data.webglHash)]
+				: []),
+			...(data.hardwareHash ? [eq(fingerprints.hardwareHash, data.hardwareHash)] : []),
+			...(data.screenHash ? [eq(fingerprints.screenHash, data.screenHash)] : []),
+			...(ip ? [eq(fingerprints.ipAddress, ip)] : []),
+		];
 
-		if (canFuzzyMatch) {
-			const [fuzzy] = await db
+		if (orConditions.length > 0) {
+			const candidates = await db
 				.select()
 				.from(fingerprints)
-				.where(
-					and(
-						eq(fingerprints.canvasHash, data.canvasHash),
-						eq(fingerprints.webglHash, data.webglHash),
-						isNotNull(fingerprints.canvasHash),
-						isNotNull(fingerprints.webglHash),
-					),
-				)
-				.limit(1);
+				.where(or(...orConditions));
 
-			if (fuzzy) {
+			let best: { candidate: StoredFingerprint; score: number } | null = null;
+			for (const candidate of candidates) {
+				const score = scoreCandidate(candidate, data, ip);
+				if (score >= SCORE_THRESHOLD && (!best || score > best.score)) {
+					best = { candidate, score };
+				}
+			}
+
+			if (best) {
 				const [updated] = await db
 					.update(fingerprints)
 					.set({
@@ -91,14 +115,14 @@ export const upsertFingerprint = createServerFn({ method: "POST" })
 						lastAccessedAt: new Date(),
 						ipAddress: ip,
 					})
-					.where(eq(fingerprints.id, fuzzy.id))
+					.where(eq(fingerprints.id, best.candidate.id))
 					.returning();
 				return {
 					is_new: false,
 					visitorId: updated.fingerprint,
 					lastAccessed: updated.lastAccessedAt,
 					numberOfTimesAccessed: updated.accessCount,
-					matchedBy: "canvas+webgl" as const,
+					matchedBy: "scored" as const,
 				};
 			}
 		}

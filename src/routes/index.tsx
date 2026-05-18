@@ -11,7 +11,7 @@ type ApiResult = {
 	visitorId: string;
 	lastAccessed: Date;
 	numberOfTimesAccessed: number;
-	matchedBy: "exact" | "canvas+webgl" | "none";
+	matchedBy: "exact" | "scored" | "none";
 };
 
 async function sha256(str: string): Promise<string> {
@@ -126,7 +126,7 @@ function Home() {
 					<p className="text-zinc-400 pb-4 text-2xl">
 						You are a {result.is_new ? "new" : "returning"} visitor
 					</p>
-					{!result.is_new && result.matchedBy === "canvas+webgl" && (
+					{!result.is_new && result.matchedBy === "scored" && (
 						<p className="text-yellow-400 pb-4 text-sm">
 							Identified via hardware signals (incognito detected)
 						</p>
