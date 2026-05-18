@@ -9,7 +9,7 @@ type Signals = {
 	visitorId: string;
 	canvasHash: string;
 	webglHash: string;
-	audioHash: string;
+	audioHash?: string;
 	screenHash: string;
 	hardwareHash: string;
 };
@@ -38,6 +38,10 @@ export const upsertFingerprint = createServerFn({ method: "POST" })
 			const [updated] = await db
 				.update(fingerprints)
 				.set({
+					canvasHash: data.canvasHash,
+					webglHash: data.webglHash,
+					screenHash: data.screenHash,
+					hardwareHash: data.hardwareHash,
 					accessCount: sql`${fingerprints.accessCount} + 1`,
 					lastAccessedAt: new Date(),
 					ipAddress: ip,

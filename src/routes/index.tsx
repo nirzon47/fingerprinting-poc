@@ -58,40 +58,6 @@ async function getWebGLHash(): Promise<string> {
 	);
 }
 
-async function getAudioHash(): Promise<string> {
-	try {
-		const AudioCtx =
-			window.AudioContext ||
-			(window as { webkitAudioContext?: typeof AudioContext })
-				.webkitAudioContext;
-		if (!AudioCtx) return "no-audio";
-		const ctx = new AudioCtx();
-		await ctx.resume();
-		const oscillator = ctx.createOscillator();
-		const analyser = ctx.createAnalyser();
-		const gainNode = ctx.createGain();
-		gainNode.gain.value = 0;
-		oscillator.type = "triangle";
-		oscillator.connect(analyser);
-		analyser.connect(gainNode);
-		gainNode.connect(ctx.destination);
-		oscillator.start(0);
-		return new Promise<string>((resolve) => {
-			setTimeout(() => {
-				const buffer = new Float32Array(analyser.fftSize);
-				analyser.getFloatTimeDomainData(buffer);
-				try {
-					oscillator.stop();
-					ctx.close();
-				} catch {}
-				sha256(Array.from(buffer.slice(0, 50)).join(",")).then(resolve);
-			}, 100);
-		});
-	} catch {
-		return "no-audio";
-	}
-}
-
 async function getScreenHash(): Promise<string> {
 	return sha256(
 		[
@@ -128,7 +94,6 @@ function Home() {
 				.then((r) => r.visitorId),
 			getCanvasHash(),
 			getWebGLHash(),
-			getAudioHash(),
 			getScreenHash(),
 			getHardwareHash(),
 		])
@@ -137,7 +102,6 @@ function Home() {
 					visitorId,
 					canvasHash,
 					webglHash,
-					audioHash,
 					screenHash,
 					hardwareHash,
 				]) =>
@@ -146,7 +110,6 @@ function Home() {
 							visitorId,
 							canvasHash,
 							webglHash,
-							audioHash,
 							screenHash,
 							hardwareHash,
 						},
