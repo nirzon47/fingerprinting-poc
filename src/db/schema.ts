@@ -110,10 +110,8 @@ export const fingerprints = pgTable('fingerprints', {
   fingerprint: text().notNull().unique(),
   canvasHash: text('canvas_hash'),
   webglHash: text('webgl_hash'),
-  audioHash: text('audio_hash'),
-  screenHash: text('screen_hash'),
+screenHash: text('screen_hash'),
   hardwareHash: text('hardware_hash'),
-  ipAddress: text('ip_address'),
   lastAccessedAt: timestamp('last_accessed_at').defaultNow().notNull(),
   accessCount: integer('access_count').default(1).notNull(),
 })

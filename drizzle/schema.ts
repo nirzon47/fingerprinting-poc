@@ -1,4 +1,5 @@
-import { pgTable, text, timestamp, foreignKey, primaryKey, unique, integer, boolean, uuid } from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, foreignKey, unique, uuid, integer, primaryKey, boolean } from "drizzle-orm/pg-core"
+import { sql } from "drizzle-orm"
 
 
 
@@ -22,6 +23,20 @@ export const session = pgTable("session", {
 			foreignColumns: [user.id],
 			name: "session_userId_user_id_fk"
 		}).onDelete("cascade"),
+]);
+
+export const fingerprints = pgTable("fingerprints", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	fingerprint: text().notNull(),
+	lastAccessedAt: timestamp("last_accessed_at", { mode: 'string' }).defaultNow().notNull(),
+	accessCount: integer("access_count").default(1).notNull(),
+	canvasHash: text("canvas_hash"),
+	webglHash: text("webgl_hash"),
+screenHash: text("screen_hash"),
+	hardwareHash: text("hardware_hash"),
+	ipAddress: text("ip_address"),
+}, (table) => [
+	unique("fingerprints_fingerprint_unique").on(table.fingerprint),
 ]);
 
 export const verificationToken = pgTable("verificationToken", {
@@ -71,10 +86,3 @@ export const account = pgTable("account", {
 		}).onDelete("cascade"),
 	primaryKey({ columns: [table.provider, table.providerAccountId], name: "account_provider_providerAccountId_pk"}),
 ]);
-
-export const fingerprints = pgTable('fingerprints', {
-  id: uuid().primaryKey().defaultRandom(),
-  fingerprint: text().notNull().unique(),
-  lastAccessedAt: timestamp('last_accessed_at').defaultNow().notNull(),
-  accessCount: integer('access_count').default(1).notNull(),
-})
